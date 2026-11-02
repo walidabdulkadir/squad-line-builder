@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Grass stripes -->
+  <rect width="64" height="64" fill="#2db52d" rx="4"/>
+  <rect x="0"  width="6.4" height="64" fill="#28a828" rx="0"/>
+  <rect x="12.8" width="6.4" height="64" fill="#28a828"/>
+  <rect x="25.6" width="6.4" height="64" fill="#28a828"/>
+  <rect x="38.4" width="6.4" height="64" fill="#28a828"/>
+  <rect x="51.2" width="6.4" height="64" fill="#28a828"/>
+
+  <!-- Outer boundary -->
+  <rect x="3" y="3" width="58" height="58" fill="none" stroke="white" stroke-width="1.5" rx="1"/>
+
+  <!-- Halfway line -->
+  <line x1="32" y1="3" x2="32" y2="61" stroke="white" stroke-width="1.5"/>
+
+  <!-- Center circle -->
+  <circle cx="32" cy="32" r="9" fill="none" stroke="white" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="1" fill="white"/>
+
+  <!-- Left penalty area -->
+  <rect x="3" y="18" width="12" height="28" fill="none" stroke="white" stroke-width="1.2"/>
+  <!-- Left goal area -->
+  <rect x="3" y="24" width="6" height="16" fill="none" stroke="white" stroke-width="1.2"/>
+  <!-- Left goal -->
+  <rect x="0" y="26" width="3" height="12" fill="none" stroke="white" stroke-width="1" rx="0.5"/>
+  <!-- Left penalty arc -->
+  <path d="M15 24 A7 7 0 0 1 15 40" fill="none" stroke="white" stroke-width="1.2"/>
+  <!-- Left penalty spot -->
+  <circle cx="13" cy="32" r="0.8" fill="white"/>
+
+  <!-- Right penalty area -->
+  <rect x="49" y="18" width="12" height="28" fill="none" stroke="white" stroke-width="1.2"/>
+  <!-- Right goal area -->
+  <rect x="55" y="24" width="6" height="16" fill="none" stroke="white" stroke-width="1.2"/>
+  <!-- Right goal -->
+  <rect x="61" y="26" width="3" height="12" fill="none" stroke="white" stroke-width="1" rx="0.5"/>
+  <!-- Right penalty arc -->
+  <path d="M49 24 A7 7 0 0 0 49 40" fill="none" stroke="white" stroke-width="1.2"/>
+  <!-- Right penalty spot -->
+  <circle cx="51" cy="32" r="0.8" fill="white"/>
+
+  <!-- Corner arcs -->
+  <path d="M3 6 A3 3 0 0 1 6 3" fill="none" stroke="white" stroke-width="1"/>
+  <path d="M58 3 A3 3 0 0 1 61 6" fill="none" stroke="white" stroke-width="1"/>
+  <path d="M3 58 A3 3 0 0 0 6 61" fill="none" stroke="white" stroke-width="1"/>
+  <path d="M58 61 A3 3 0 0 0 61 58" fill="none" stroke="white" stroke-width="1"/>
+</svg>
