@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback, useRef, Component } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "sonner";
-import { Football, Users, ShieldCheck, GearSix, ArrowsClockwise, Monitor, Desktop, FrameCorners } from "@phosphor-icons/react";
+import {
+  SoccerBall, Users, GearSix, UserPlus, ShieldCheck,
+  FrameCorners, Desktop, Monitor,
+} from "@phosphor-icons/react";
 import { Player, TacticalSetup, Substitution, MatchResponsibilities } from "./types";
 import { FORMATIONS, INITIAL_SQUAD, DEFAULT_SETUP, STORAGE_KEY } from "./constants";
 import PitchView, { PitchSize } from "./components/PitchView";
 import BenchAndSubstitutions from "./components/BenchAndSubstitutions";
 import SquadManagerDialog from "./components/SquadManagerDialog";
+import AddPlayerDialog from "./components/AddPlayerDialog";
+import SlotPickerSheet from "./components/SlotPickerSheet";
 import TacticsAndResponsibilities from "./components/TacticsAndResponsibilities";
 
 type TabId = "bench" | "tactics" | "settings";
@@ -14,18 +19,15 @@ type TabId = "bench" | "tactics" | "settings";
 function normalizeSetup(raw: unknown): TacticalSetup {
   const base = DEFAULT_SETUP;
   const s = (raw && typeof raw === "object" ? raw : {}) as Partial<TacticalSetup>;
-
   const starters = Array.isArray(s.starters)
     ? s.starters.slice(0, 11).map((id) => (typeof id === "string" ? id : null))
     : [...base.starters];
   while (starters.length < 11) starters.push(null);
-
   return {
     teamName: typeof s.teamName === "string" && s.teamName.trim() ? s.teamName : base.teamName,
     kitColor: typeof s.kitColor === "string" ? s.kitColor : base.kitColor,
     formationId: FORMATIONS.some((f) => f.id === s.formationId) ? (s.formationId as string) : base.formationId,
-    customPositions:
-      s.customPositions && typeof s.customPositions === "object" ? s.customPositions : {},
+    customPositions: s.customPositions && typeof s.customPositions === "object" ? s.customPositions : {},
     starters,
     substitutes: Array.isArray(s.substitutes)
       ? s.substitutes.filter((id): id is string => typeof id === "string")
@@ -54,7 +56,7 @@ function loadState(): { setup: TacticalSetup; players: Player[] } {
       const parsed = JSON.parse(raw);
       return { setup: normalizeSetup(parsed?.setup), players: normalizePlayers(parsed?.players) };
     }
-  } catch { /* corrupt or unreadable storage: fall back to defaults */ }
+  } catch { /* corrupt storage */ }
   return { setup: DEFAULT_SETUP, players: INITIAL_SQUAD };
 }
 
@@ -65,14 +67,14 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError:
     if (this.state.hasError) {
       return (
         <div className="min-h-[100dvh] bg-[#0B132B] text-white flex flex-col items-center justify-center gap-4 p-6 text-center">
-          <Football size={44} className="text-emerald-400" />
+          <SoccerBall size={44} className="text-emerald-400" />
           <h1 className="text-lg font-bold">Something went wrong</h1>
-          <p className="text-sm text-gray-400 max-w-sm">The tactics board hit an unexpected error. Reset the saved data to recover.</p>
+          <p className="text-sm text-gray-400 max-w-sm">The tactics board hit an unexpected error.</p>
           <button
             onClick={() => { localStorage.removeItem(STORAGE_KEY); window.location.reload(); }}
             className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-colors"
           >
-            Reset &amp; reload
+            Clear &amp; reload
           </button>
         </div>
       );
@@ -85,10 +87,11 @@ export default function App() {
   const [{ setup, players }, setState] = useState(loadState);
   const [activeTab, setActiveTab] = useState<TabId>("bench");
   const [showSquadManager, setShowSquadManager] = useState(false);
-  const [pitchSize, setPitchSize] = useState<PitchSize>("standard");
+  const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [pitchSize, setPitchSize] = useState<PitchSize>("compact");
+  const [pendingSlot, setPendingSlot] = useState<{ slotId: string; slotIndex: number } | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced auto-save
   useEffect(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
@@ -106,9 +109,27 @@ export default function App() {
     }));
   }, []);
 
-  const handleSlotClick = useCallback((_slotId: string, _index: number) => {
-    setActiveTab("bench");
-  }, []);
+  const handleSlotClick = useCallback((slotId: string, slotIndex: number) => {
+    if (setup.starters[slotIndex] !== null) return;
+    setPendingSlot({ slotId, slotIndex });
+  }, [setup.starters]);
+
+  const handleSlotPick = useCallback((playerId: string) => {
+    if (!pendingSlot) return;
+    setState((prev) => {
+      const newStarters = [...prev.setup.starters];
+      newStarters[pendingSlot.slotIndex] = playerId;
+      const newSubstitutes = prev.setup.substitutes.filter((id) => id !== playerId);
+      const playersUpdated = prev.players.map((p) =>
+        p.id === playerId ? { ...p, isStarter: true } : p
+      );
+      return {
+        players: playersUpdated,
+        setup: { ...prev.setup, starters: newStarters, substitutes: newSubstitutes },
+      };
+    });
+    setPendingSlot(null);
+  }, [pendingSlot]);
 
   const handleFormationChange = useCallback((id: string) => {
     setState((prev) => ({
@@ -204,177 +225,312 @@ export default function App() {
     setState((prev) => ({ ...prev, setup: { ...prev.setup, kitColor: color } }));
   }, []);
 
-  const handleReset = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    setState({ setup: DEFAULT_SETUP, players: INITIAL_SQUAD });
-    toast.success("Reset to defaults");
-  }, []);
-
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-    { id: "bench", label: "Bench", icon: <Users size={14} /> },
-    { id: "tactics", label: "Tactics", icon: <Football size={14} /> },
-    { id: "settings", label: "Settings", icon: <GearSix size={14} /> },
+    { id: "bench", label: "Bench", icon: <Users size={16} /> },
+    { id: "tactics", label: "Tactics", icon: <SoccerBall size={16} /> },
+    { id: "settings", label: "Settings", icon: <GearSix size={16} /> },
   ];
+
+  const HEADER_H = 56; // px — keep in sync with header py
 
   return (
     <ErrorBoundary>
-    <div className="min-h-[100dvh] bg-[#0B132B] text-white font-sans">
-      <Toaster richColors position="top-right" closeButton />
+      {/* ── Root shell ── */}
+      <div className="min-h-[100dvh] bg-[#0B132B] text-white font-sans">
+        <Toaster richColors position="top-center" closeButton />
 
-      {/* Top bar */}
-      <header className="sticky top-0 z-40 bg-[#0B132B]/90 backdrop-blur-md border-b border-[#1E293B]">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-              <Football size={18} className="text-emerald-400" />
+        {/* ══════════ HEADER ══════════ */}
+        <header
+          className="sticky top-0 z-40 bg-[#0B132B]/95 backdrop-blur-md border-b border-[#1E293B]"
+          style={{ height: HEADER_H }}
+        >
+          <div className="h-full max-w-7xl mx-auto px-3 sm:px-5 flex items-center justify-between gap-2">
+            {/* Brand */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                <SoccerBall size={17} className="text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-sm font-bold text-white leading-tight truncate max-w-[140px] sm:max-w-none">
+                  {setup.teamName}
+                </h1>
+                <p className="text-[10px] text-gray-500 hidden sm:block">
+                  {formation.name} · {setup.starters.filter(Boolean).length}/11
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-sm font-bold text-white leading-tight">{setup.teamName}</h1>
-              <p className="text-[10px] text-gray-500">{formation.name} | {setup.starters.filter(Boolean).length}/11 filled</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setShowSquadManager(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1E293B] border border-[#334155] text-xs text-gray-300 hover:border-emerald-500/40 hover:text-white transition-colors">
-              <ShieldCheck size={14} /> Squad
-            </button>
-            <button onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1E293B] border border-[#334155] text-xs text-gray-300 hover:border-amber-500/40 hover:text-white transition-colors">
-              <ArrowsClockwise size={14} /> Reset
-            </button>
-          </div>
-        </div>
-      </header>
 
-      {/* Main layout */}
-      <main className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
-        {/* Pitch */}
-        <div className="order-1 flex flex-col items-center">
-          {/* Pitch size controls */}
-          <div className="flex items-center gap-1 mb-3 bg-[#1E293B] border border-[#334155] rounded-lg p-1">
-            {([
-              { id: "compact" as PitchSize, label: "Compact", icon: <FrameCorners size={13} /> },
-              { id: "standard" as PitchSize, label: "Standard", icon: <Desktop size={13} /> },
-              { id: "expanded" as PitchSize, label: "Wide", icon: <Monitor size={13} /> },
-            ]).map((opt) => (
+            {/* Actions — joined pill */}
+            <div className="flex items-center shrink-0">
               <button
-                key={opt.id}
-                onClick={() => setPitchSize(opt.id)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                  pitchSize === opt.id
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-gray-400 hover:text-white hover:bg-[#334155]/50"
-                }`}
+                onClick={() => setShowSquadManager(true)}
+                className="flex items-center gap-1.5 pl-3 pr-2.5 py-1.5 rounded-l-lg bg-[#1E293B] border border-[#334155] text-xs font-semibold text-gray-300 hover:bg-[#273548] hover:text-white transition-colors"
               >
-                {opt.icon} {opt.label}
+                <ShieldCheck size={14} />
+                <span className="hidden sm:inline">Squad</span>
               </button>
-            ))}
+              <button
+                onClick={() => setShowAddPlayer(true)}
+                className="flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-r-lg bg-emerald-500 border border-emerald-500 text-xs font-semibold text-white hover:bg-emerald-400 transition-colors"
+              >
+                <UserPlus size={14} />
+                <span className="hidden sm:inline">Add Player</span>
+              </button>
+            </div>
           </div>
-          <PitchView
-            formation={formation}
-            starters={setup.starters}
-            players={players}
-            customPositions={setup.customPositions}
-            responsibilities={setup.responsibilities}
-            kitColor={setup.kitColor}
-            pitchSize={pitchSize}
-            onPositionChange={handlePositionChange}
-            onSlotClick={handleSlotClick}
-          />
-        </div>
+        </header>
 
-        {/* Side panel */}
-        <aside className="order-2 lg:order-2">
-          <div className="bg-[#111E38] border border-[#1E293B] rounded-xl overflow-hidden sticky top-[72px]">
-            {/* Tab bar */}
-            <div className="flex border-b border-[#1E293B]">
-              {tabs.map((tab) => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold transition-colors ${
-                    activeTab === tab.id ? "text-emerald-400 bg-emerald-500/5 border-b-2 border-emerald-400" : "text-gray-500 hover:text-gray-300"
-                  }`}>
-                  {tab.icon} {tab.label}
+        {/* ══════════ MAIN ══════════
+            Mobile  : single column, pitch → panel (panel has fixed bottom tabs)
+            Tablet  : single column with better sizing
+            Desktop : two columns side-by-side
+        ══════════ */}
+        <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6
+                         pb-[72px] sm:pb-4           {/* space for mobile bottom tab bar */}
+                         pt-4
+                         grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4 lg:gap-6
+                         lg:items-start">
+
+          {/* ── Pitch column ── */}
+          <div className="order-1 flex flex-col items-center gap-3">
+
+            {/* Pitch size toggle — hidden on mobile (auto compact) */}
+            <div className="hidden sm:flex items-center gap-1 bg-[#1E293B] border border-[#334155] rounded-lg p-1 self-center">
+              {([
+                { id: "compact" as PitchSize, label: "Compact", icon: <FrameCorners size={13} /> },
+                { id: "standard" as PitchSize, label: "Standard", icon: <Desktop size={13} /> },
+                { id: "expanded" as PitchSize, label: "Wide", icon: <Monitor size={13} /> },
+              ]).map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => setPitchSize(opt.id)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                    pitchSize === opt.id
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "text-gray-400 hover:text-white hover:bg-[#334155]/50"
+                  }`}
+                >
+                  {opt.icon} {opt.label}
                 </button>
               ))}
             </div>
 
-            {/* Tab content */}
-            <div className="p-4 max-h-[calc(100dvh-180px)] overflow-y-auto">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {activeTab === "bench" && (
-                    <BenchAndSubstitutions
-                      players={players}
-                      starters={setup.starters}
-                      substitutes={setup.substitutes}
-                      substitutions={setup.substitutions}
-                      onSubstitute={handleSubstitute}
-                      onAutoFill={handleAutoFill}
-                      onClearLineup={handleClearLineup}
-                    />
-                  )}
-                  {activeTab === "tactics" && (
-                    <TacticsAndResponsibilities
-                      formations={FORMATIONS}
-                      currentFormationId={setup.formationId}
-                      responsibilities={setup.responsibilities}
-                      players={players}
-                      onFormationChange={handleFormationChange}
-                      onResponsibilityChange={handleResponsibilityChange}
-                    />
-                  )}
-                  {activeTab === "settings" && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-[10px] text-gray-500 uppercase font-semibold">Team Name</label>
-                        <input value={setup.teamName} onChange={(e) => handleTeamNameChange(e.target.value)}
-                          className="mt-1 w-full px-3 py-2 rounded-lg bg-[#0B132B] border border-[#334155] text-sm text-white focus:border-emerald-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="text-[10px] text-gray-500 uppercase font-semibold">Kit Color</label>
-                        <div className="flex gap-2 mt-2">
-                          {["#10B981", "#3B82F6", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"].map((c) => (
-                            <button key={c} onClick={() => handleKitColorChange(c)}
-                              className={`w-7 h-7 rounded-full border-2 transition-transform ${setup.kitColor === c ? "border-white scale-110" : "border-transparent hover:scale-105"}`}
-                              style={{ backgroundColor: c }} />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="pt-3 border-t border-[#1E293B]">
-                        <p className="text-xs text-gray-500">Data auto-saves to browser storage. Changes persist across sessions.</p>
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+            {/* Pitch — fluid on mobile, capped on larger screens */}
+            <div className="w-full flex justify-center">
+              <PitchView
+                formation={formation}
+                starters={setup.starters}
+                players={players}
+                customPositions={setup.customPositions}
+                responsibilities={setup.responsibilities}
+                kitColor={setup.kitColor}
+                pitchSize={pitchSize}
+                substitutes={setup.substitutes}
+                onPositionChange={handlePositionChange}
+                onSlotClick={handleSlotClick}
+                onSubstitute={handleSubstitute}
+              />
             </div>
           </div>
-        </aside>
-      </main>
 
-      {/* Squad Manager Modal */}
-      <AnimatePresence>
-        {showSquadManager && (
-          <SquadManagerDialog
+          {/* ── Side panel (desktop: right column; mobile/tablet: below pitch) ── */}
+          <aside className="order-2 lg:sticky lg:top-[calc(56px+1rem)]">
+            {/* Desktop card */}
+            <div className="hidden sm:block bg-[#111E38] border border-[#1E293B] rounded-2xl overflow-hidden">
+              {/* Tab bar */}
+              <div className="flex border-b border-[#1E293B]">
+                {tabs.map((tab) => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-3 text-xs font-semibold transition-colors ${
+                      activeTab === tab.id
+                        ? "text-emerald-400 bg-emerald-500/5 border-b-2 border-emerald-400"
+                        : "text-gray-500 hover:text-gray-300"
+                    }`}>
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+              </div>
+              <div className="p-4 overflow-y-auto max-h-[calc(100dvh-160px)]">
+                <TabContent
+                  activeTab={activeTab}
+                  players={players}
+                  setup={setup}
+                  formations={FORMATIONS}
+                  onSubstitute={handleSubstitute}
+                  onAutoFill={handleAutoFill}
+                  onClearLineup={handleClearLineup}
+                  onFormationChange={handleFormationChange}
+                  onResponsibilityChange={handleResponsibilityChange}
+                  onTeamNameChange={handleTeamNameChange}
+                  onKitColorChange={handleKitColorChange}
+                />
+              </div>
+            </div>
+
+            {/* Mobile: flat content below pitch (tabs handled by fixed bottom bar) */}
+            <div className="sm:hidden bg-[#111E38] border border-[#1E293B] rounded-2xl overflow-hidden">
+              <div className="p-4">
+                <TabContent
+                  activeTab={activeTab}
+                  players={players}
+                  setup={setup}
+                  formations={FORMATIONS}
+                  onSubstitute={handleSubstitute}
+                  onAutoFill={handleAutoFill}
+                  onClearLineup={handleClearLineup}
+                  onFormationChange={handleFormationChange}
+                  onResponsibilityChange={handleResponsibilityChange}
+                  onTeamNameChange={handleTeamNameChange}
+                  onKitColorChange={handleKitColorChange}
+                />
+              </div>
+            </div>
+          </aside>
+        </main>
+
+        {/* ══════════ MOBILE BOTTOM TAB BAR ══════════ */}
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#0B132B]/95 backdrop-blur-md border-t border-[#1E293B]">
+          <div className="flex">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-semibold transition-colors ${
+                  activeTab === tab.id ? "text-emerald-400" : "text-gray-500"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        {/* ══════════ MODALS ══════════ */}
+        <AnimatePresence>
+          {showSquadManager && (
+            <SquadManagerDialog
+              players={players}
+              teamName={setup.teamName}
+              kitColor={setup.kitColor}
+              onUpdatePlayer={handleUpdatePlayer}
+              onDeletePlayer={handleDeletePlayer}
+              onTeamNameChange={handleTeamNameChange}
+              onKitColorChange={handleKitColorChange}
+              onClose={() => setShowSquadManager(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showAddPlayer && (
+            <AddPlayerDialog
+              players={players}
+              kitColor={setup.kitColor}
+              onAddPlayer={handleAddPlayer}
+              onClose={() => setShowAddPlayer(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {pendingSlot && (() => {
+          const slot = formation.slots[pendingSlot.slotIndex];
+          const benchPlayers = players.filter((p) => setup.substitutes.includes(p.id));
+          return (
+            <SlotPickerSheet
+              slotLabel={slot?.label ?? "Slot"}
+              benchPlayers={benchPlayers}
+              kitColor={setup.kitColor}
+              onPick={handleSlotPick}
+              onClose={() => setPendingSlot(null)}
+            />
+          );
+        })()}
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+/* ── Extracted tab content so it renders in both desktop card and mobile flat view ── */
+function TabContent({
+  activeTab, players, setup, formations,
+  onSubstitute, onAutoFill, onClearLineup,
+  onFormationChange, onResponsibilityChange,
+  onTeamNameChange, onKitColorChange,
+}: {
+  activeTab: TabId;
+  players: Player[];
+  setup: TacticalSetup;
+  formations: typeof FORMATIONS;
+  onSubstitute: (a: string, b: string) => void;
+  onAutoFill: () => void;
+  onClearLineup: () => void;
+  onFormationChange: (id: string) => void;
+  onResponsibilityChange: (key: keyof MatchResponsibilities, id: string | null) => void;
+  onTeamNameChange: (name: string) => void;
+  onKitColorChange: (color: string) => void;
+}) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.15 }}
+      >
+        {activeTab === "bench" && (
+          <BenchAndSubstitutions
             players={players}
-            teamName={setup.teamName}
-            kitColor={setup.kitColor}
-            onAddPlayer={handleAddPlayer}
-            onUpdatePlayer={handleUpdatePlayer}
-            onDeletePlayer={handleDeletePlayer}
-            onTeamNameChange={handleTeamNameChange}
-            onKitColorChange={handleKitColorChange}
-            onClose={() => setShowSquadManager(false)}
+            starters={setup.starters}
+            substitutes={setup.substitutes}
+            substitutions={setup.substitutions}
+            onSubstitute={onSubstitute}
+            onAutoFill={onAutoFill}
+            onClearLineup={onClearLineup}
           />
         )}
-      </AnimatePresence>
-    </div>
-    </ErrorBoundary>
+        {activeTab === "tactics" && (
+          <TacticsAndResponsibilities
+            formations={formations}
+            currentFormationId={setup.formationId}
+            responsibilities={setup.responsibilities}
+            players={players}
+            onFormationChange={onFormationChange}
+            onResponsibilityChange={onResponsibilityChange}
+          />
+        )}
+        {activeTab === "settings" && (
+          <div className="space-y-5">
+            <div>
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Team Name</label>
+              <input
+                value={setup.teamName}
+                onChange={(e) => onTeamNameChange(e.target.value)}
+                className="mt-1.5 w-full px-3 py-2.5 rounded-xl bg-[#0B132B] border border-[#334155] text-sm text-white focus:border-emerald-500 outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Kit Color</label>
+              <div className="flex flex-wrap gap-2.5 mt-2">
+                {["#10B981", "#3B82F6", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"].map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => onKitColorChange(c)}
+                    className={`w-8 h-8 rounded-full border-2 transition-transform ${
+                      setup.kitColor === c ? "border-white scale-110 shadow-lg" : "border-transparent hover:scale-105"
+                    }`}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="pt-3 border-t border-[#1E293B]">
+              <p className="text-xs text-gray-500">Changes auto-save to browser storage.</p>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }
