@@ -1,6 +1,6 @@
 import { Formation, Player, TacticalSetup } from "./types";
 
-export const STORAGE_KEY = "squadline_tactics_v1";
+export const STORAGE_KEY = "squadline_tactics_v2";
 
 export const FORMATIONS: Formation[] = [
   {
@@ -107,43 +107,22 @@ export const FORMATIONS: Formation[] = [
   },
 ];
 
-export const INITIAL_SQUAD: Player[] = [
-  { id: "p1", name: "Marcus Okafor", number: 1, position: "GK", secondaryPositions: [], isStarter: true, pitchCoordinates: { x: 50, y: 92 }, preferredFoot: "right", rating: 82 },
-  { id: "p2", name: "Daniel Vasquez", number: 2, position: "RB", secondaryPositions: ["RWB"], isStarter: true, pitchCoordinates: { x: 85, y: 72 }, preferredFoot: "right", rating: 78 },
-  { id: "p3", name: "Kwame Asante", number: 4, position: "CB", secondaryPositions: ["CDM"], isStarter: true, pitchCoordinates: { x: 37, y: 76 }, preferredFoot: "right", rating: 84 },
-  { id: "p4", name: "Liam Fitzgerald", number: 5, position: "CB", secondaryPositions: [], isStarter: true, pitchCoordinates: { x: 63, y: 76 }, preferredFoot: "left", rating: 81 },
-  { id: "p5", name: "Yuki Tanaka", number: 3, position: "LB", secondaryPositions: ["LWB"], isStarter: true, pitchCoordinates: { x: 15, y: 72 }, preferredFoot: "left", rating: 79 },
-  { id: "p6", name: "Omar Benali", number: 6, position: "CDM", secondaryPositions: ["CM"], isStarter: true, pitchCoordinates: { x: 50, y: 58 }, preferredFoot: "right", rating: 83 },
-  { id: "p7", name: "Sven Lindqvist", number: 8, position: "CM", secondaryPositions: ["CAM"], isStarter: true, pitchCoordinates: { x: 30, y: 52 }, preferredFoot: "right", rating: 80 },
-  { id: "p8", name: "Rafael Costa", number: 10, position: "CM", secondaryPositions: ["CAM"], isStarter: true, pitchCoordinates: { x: 70, y: 52 }, preferredFoot: "left", rating: 86 },
-  { id: "p9", name: "Amadou Diallo", number: 11, position: "LW", secondaryPositions: ["LM"], isStarter: true, pitchCoordinates: { x: 18, y: 28 }, preferredFoot: "right", rating: 84 },
-  { id: "p10", name: "Jack Morrison", number: 9, position: "ST", secondaryPositions: ["CF"], isStarter: true, pitchCoordinates: { x: 50, y: 22 }, preferredFoot: "right", rating: 87 },
-  { id: "p11", name: "Erik Johansson", number: 7, position: "RW", secondaryPositions: ["RM"], isStarter: true, pitchCoordinates: { x: 82, y: 28 }, preferredFoot: "left", rating: 82 },
-  { id: "p12", name: "Tommy Nguyen", number: 13, position: "GK", secondaryPositions: [], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "right", rating: 74 },
-  { id: "p13", name: "Callum Wright", number: 14, position: "CB", secondaryPositions: ["RB"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "right", rating: 76 },
-  { id: "p14", name: "Andre Silva", number: 15, position: "LB", secondaryPositions: ["LWB"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "left", rating: 75 },
-  { id: "p15", name: "Pierre Dubois", number: 16, position: "CM", secondaryPositions: ["CDM"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "right", rating: 77 },
-  { id: "p16", name: "Kofi Mensah", number: 17, position: "CAM", secondaryPositions: ["CM", "RW"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "right", rating: 80 },
-  { id: "p17", name: "Lukas Weber", number: 18, position: "ST", secondaryPositions: ["CF", "RW"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "right", rating: 79 },
-  { id: "p18", name: "James O'Brien", number: 19, position: "LW", secondaryPositions: ["LM"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "right", rating: 76 },
-  { id: "p19", name: "Hassan Ali", number: 20, position: "RM", secondaryPositions: ["RW"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "left", rating: 75 },
-  { id: "p20", name: "Mateo Fernandez", number: 21, position: "CDM", secondaryPositions: ["CB"], isStarter: false, pitchCoordinates: { x: 0, y: 0 }, preferredFoot: "right", rating: 78 },
-];
+export const INITIAL_SQUAD: Player[] = [];
 
 export const DEFAULT_SETUP: TacticalSetup = {
-  teamName: "St. Jude Lions Varsity XI",
+  teamName: "My Team",
   kitColor: "#10B981",
   formationId: "433",
   customPositions: {},
-  starters: ["p1", "p5", "p3", "p4", "p2", "p6", "p7", "p8", "p9", "p10", "p11"],
-  substitutes: ["p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20"],
+  starters: Array(11).fill(null),
+  substitutes: [],
   responsibilities: {
-    captainId: "p3",
-    viceCaptainId: "p10",
-    penaltyTakerId: "p10",
-    freeKickTakerId: "p8",
-    leftCornerTakerId: "p9",
-    rightCornerTakerId: "p8",
+    captainId: null,
+    viceCaptainId: null,
+    penaltyTakerId: null,
+    freeKickTakerId: null,
+    leftCornerTakerId: null,
+    rightCornerTakerId: null,
   },
   substitutions: [],
 };
