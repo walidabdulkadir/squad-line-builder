@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "sonner";
 import {
   SoccerBall, Users, GearSix, UserPlus, ShieldCheck,
-  FrameCorners, Desktop, Monitor,
+  FrameCorners, Desktop, Monitor, GithubLogo, LinkedinLogo, InstagramLogo,
 } from "@phosphor-icons/react";
 import { Player, TacticalSetup, Substitution, MatchResponsibilities } from "./types";
 import { FORMATIONS, INITIAL_SQUAD, DEFAULT_SETUP, STORAGE_KEY } from "./constants";
@@ -405,6 +405,56 @@ export default function App() {
             ))}
           </div>
         </nav>
+
+        <footer className="border-t border-[#1E293B] bg-[#0B132B]">
+          <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-6 pb-24 sm:pb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-400">
+                Built by{" "}
+                <span className="font-display text-base font-bold tracking-tight text-emerald-400 sm:text-lg">
+                  Walid Abdulkadir
+                </span>
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:items-end">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                Connect to my socials
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="https://github.com/walidabdulkadir"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="GitHub profile (opens in a new tab)"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#1E293B] px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-emerald-500/40 hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                >
+                  <GithubLogo size={16} aria-hidden="true" />
+                  GitHub
+                </a>
+                <a
+                  href="https://linkedin.com/in/walid-abdulkadir-70529a2a2"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="LinkedIn profile (opens in a new tab)"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#1E293B] px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-emerald-500/40 hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                >
+                  <LinkedinLogo size={16} aria-hidden="true" />
+                  LinkedIn
+                </a>
+                <a
+                  href="https://www.instagram.com/walidjr_10?igsh=dHdoMnc2aTdyeXN2"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Instagram profile (opens in a new tab)"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#1E293B] px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-emerald-500/40 hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                >
+                  <InstagramLogo size={16} aria-hidden="true" />
+                  Instagram
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
 
         {/* ══════════ MODALS ══════════ */}
         <AnimatePresence>
