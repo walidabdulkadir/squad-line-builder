@@ -12,6 +12,7 @@ dns.setDefaultResultOrder("verbatim");
 
 // https://vite.dev/config/
 export default defineConfig({
+  root: __dirname,
   plugins: [
     clearLogPlugin(),
     react(),
