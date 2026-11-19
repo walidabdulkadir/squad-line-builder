@@ -88,7 +88,7 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError:
 export default function App() {
   const [{ setup, players }, setState] = useState(loadState);
   const [theme, setTheme] = useState<Theme>(() =>
-    localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light"
+    localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark"
   );
   const [activeTab, setActiveTab] = useState<TabId>("bench");
   const [showSquadManager, setShowSquadManager] = useState(false);
