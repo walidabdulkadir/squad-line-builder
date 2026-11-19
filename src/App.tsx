@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Toaster, toast } from "sonner";
 import {
   SoccerBall, Users, GearSix, UserPlus, ShieldCheck,
-  FrameCorners, Desktop, Monitor, GithubLogo, LinkedinLogo, InstagramLogo,
+  FrameCorners, Desktop, Monitor, GithubLogo, LinkedinLogo, InstagramLogo, Sun, Moon,
 } from "@phosphor-icons/react";
 import { Player, TacticalSetup, Substitution, MatchResponsibilities } from "./types";
 import { FORMATIONS, INITIAL_SQUAD, DEFAULT_SETUP, STORAGE_KEY } from "./constants";
@@ -15,6 +15,8 @@ import SlotPickerSheet from "./components/SlotPickerSheet";
 import TacticsAndResponsibilities from "./components/TacticsAndResponsibilities";
 
 type TabId = "bench" | "tactics" | "settings";
+type Theme = "light" | "dark";
+const THEME_STORAGE_KEY = "squadline_theme";
 
 function normalizeSetup(raw: unknown): TacticalSetup {
   const base = DEFAULT_SETUP;
@@ -66,13 +68,13 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError:
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-[100dvh] bg-[#0B132B] text-white flex flex-col items-center justify-center gap-4 p-6 text-center">
-          <SoccerBall size={44} className="text-emerald-400" />
+        <div className="min-h-[100dvh] bg-[var(--bg)] text-[var(--fg)] flex flex-col items-center justify-center gap-4 p-6 text-center">
+          <SoccerBall size={44} className="text-blue-700" />
           <h1 className="text-lg font-bold">Something went wrong</h1>
-          <p className="text-sm text-gray-400 max-w-sm">The tactics board hit an unexpected error.</p>
+          <p className="text-sm text-[var(--muted)] max-w-sm">The tactics board hit an unexpected error.</p>
           <button
             onClick={() => { localStorage.removeItem(STORAGE_KEY); window.location.reload(); }}
-            className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-colors"
+            className="px-4 py-2 rounded-none bg-blue-600 text-[var(--accent-fg)] text-sm font-semibold hover:bg-blue-600 transition-colors"
           >
             Clear &amp; reload
           </button>
@@ -85,6 +87,9 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError:
 
 export default function App() {
   const [{ setup, players }, setState] = useState(loadState);
+  const [theme, setTheme] = useState<Theme>(() =>
+    localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light"
+  );
   const [activeTab, setActiveTab] = useState<TabId>("bench");
   const [showSquadManager, setShowSquadManager] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
@@ -99,6 +104,11 @@ export default function App() {
     }, 800);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [setup, players]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   const formation = FORMATIONS.find((f) => f.id === setup.formationId) || FORMATIONS[0];
 
@@ -236,45 +246,55 @@ export default function App() {
   return (
     <ErrorBoundary>
       {/* ── Root shell ── */}
-      <div className="min-h-[100dvh] bg-[#0B132B] text-white font-sans">
-        <Toaster richColors position="top-center" closeButton />
+      <div className={`app-shell min-h-[100dvh] bg-[var(--bg)] text-[var(--fg)] font-sans ${theme === "dark" ? "dark" : ""}`}>
+        <Toaster richColors theme={theme} position="top-center" closeButton />
 
         {/* ══════════ HEADER ══════════ */}
         <header
-          className="sticky top-0 z-40 bg-[#0B132B]/95 backdrop-blur-md border-b border-[#1E293B]"
+          className="sticky top-0 z-40 bg-[var(--bg)]/95 backdrop-blur-md border-b border-[var(--border)]"
           style={{ height: HEADER_H }}
         >
           <div className="h-full max-w-7xl mx-auto px-3 sm:px-5 flex items-center justify-between gap-2">
             {/* Brand */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-                <SoccerBall size={17} className="text-emerald-400" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-none bg-blue-600/20 border border-blue-600/30 flex items-center justify-center">
+                <SoccerBall size={17} className="text-blue-700" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm font-bold text-white leading-tight truncate max-w-[140px] sm:max-w-none">
+                <h1 className="text-sm font-bold text-[var(--fg)] leading-tight truncate max-w-[140px] sm:max-w-none">
                   {setup.teamName}
                 </h1>
-                <p className="text-[10px] text-gray-500 hidden sm:block">
+                <p className="text-[10px] text-[var(--muted)] hidden sm:block">
                   {formation.name} · {setup.starters.filter(Boolean).length}/11
                 </p>
               </div>
             </div>
 
-            {/* Actions — joined pill */}
-            <div className="flex items-center shrink-0">
+            {/* Header actions */}
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setShowSquadManager(true)}
-                className="flex items-center gap-1.5 pl-3 pr-2.5 py-1.5 rounded-l-lg bg-[#1E293B] border border-[#334155] text-xs font-semibold text-gray-300 hover:bg-[#273548] hover:text-white transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-[var(--surface-2)] border border-[var(--border)] text-xs font-semibold text-[var(--fg)] hover:bg-[var(--border)] transition-colors"
               >
                 <ShieldCheck size={14} />
                 <span className="hidden sm:inline">Squad</span>
               </button>
               <button
                 onClick={() => setShowAddPlayer(true)}
-                className="flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-r-lg bg-emerald-500 border border-emerald-500 text-xs font-semibold text-white hover:bg-emerald-400 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-blue-600 border border-blue-600 text-xs font-semibold text-[var(--accent-fg)] hover:bg-blue-500 transition-colors"
               >
                 <UserPlus size={14} />
                 <span className="hidden sm:inline">Add Player</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme((current) => current === "light" ? "dark" : "light")}
+                aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+                aria-pressed={theme === "dark"}
+                title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+                className="flex h-9 w-9 items-center justify-center rounded-none bg-[var(--surface-2)] border border-[var(--border)] text-[var(--fg)] hover:bg-[var(--border)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+              >
+                {theme === "light" ? <Moon size={16} aria-hidden="true" /> : <Sun size={16} aria-hidden="true" />}
               </button>
             </div>
           </div>
@@ -295,7 +315,7 @@ export default function App() {
           <div className="order-1 flex flex-col items-center gap-3">
 
             {/* Pitch size toggle — hidden on mobile (auto compact) */}
-            <div className="hidden sm:flex items-center gap-1 bg-[#1E293B] border border-[#334155] rounded-lg p-1 self-center">
+            <div className="hidden sm:flex items-center gap-1 bg-[var(--surface-2)] border border-[var(--border)] rounded-none p-1 self-center">
               {([
                 { id: "compact" as PitchSize, label: "Compact", icon: <FrameCorners size={13} /> },
                 { id: "standard" as PitchSize, label: "Standard", icon: <Desktop size={13} /> },
@@ -304,10 +324,10 @@ export default function App() {
                 <button
                   key={opt.id}
                   onClick={() => setPitchSize(opt.id)}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-none text-[11px] font-medium transition-all ${
                     pitchSize === opt.id
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                      : "text-gray-400 hover:text-white hover:bg-[#334155]/50"
+                      ? "bg-blue-600/20 text-blue-700 border border-blue-600/30"
+                      : "text-[var(--muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-2)]/50"
                   }`}
                 >
                   {opt.icon} {opt.label}
@@ -336,15 +356,15 @@ export default function App() {
           {/* ── Side panel (desktop: right column; mobile/tablet: below pitch) ── */}
           <aside className="order-2 lg:sticky lg:top-[calc(56px+1rem)]">
             {/* Desktop card */}
-            <div className="hidden sm:block bg-[#111E38] border border-[#1E293B] rounded-2xl overflow-hidden">
+            <div className="hidden sm:block bg-[var(--surface)] border border-[var(--border)] rounded-none overflow-hidden">
               {/* Tab bar */}
-              <div className="flex border-b border-[#1E293B]">
+              <div className="flex border-b border-[var(--border)]">
                 {tabs.map((tab) => (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                     className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-3 text-xs font-semibold transition-colors ${
                       activeTab === tab.id
-                        ? "text-emerald-400 bg-emerald-500/5 border-b-2 border-emerald-400"
-                        : "text-gray-500 hover:text-gray-300"
+                        ? "text-blue-700 bg-blue-600/5 border-b-2 border-blue-400"
+                        : "text-[var(--muted)] hover:text-[var(--muted)]"
                     }`}>
                     {tab.icon} {tab.label}
                   </button>
@@ -368,7 +388,7 @@ export default function App() {
             </div>
 
             {/* Mobile: flat content below pitch (tabs handled by fixed bottom bar) */}
-            <div className="sm:hidden bg-[#111E38] border border-[#1E293B] rounded-2xl overflow-hidden">
+            <div className="sm:hidden bg-[var(--surface)] border border-[var(--border)] rounded-none overflow-hidden">
               <div className="p-4">
                 <TabContent
                   activeTab={activeTab}
@@ -389,14 +409,14 @@ export default function App() {
         </main>
 
         {/* ══════════ MOBILE BOTTOM TAB BAR ══════════ */}
-        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#0B132B]/95 backdrop-blur-md border-t border-[#1E293B]">
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-[var(--bg)]/95 backdrop-blur-md border-t border-[var(--border)]">
           <div className="flex">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-semibold transition-colors ${
-                  activeTab === tab.id ? "text-emerald-400" : "text-gray-500"
+                  activeTab === tab.id ? "text-blue-700" : "text-[var(--muted)]"
                 }`}
               >
                 {tab.icon}
@@ -406,18 +426,18 @@ export default function App() {
           </div>
         </nav>
 
-        <footer className="border-t border-[#1E293B] bg-[#0B132B]">
+        <footer className="border-t border-[var(--border)] bg-[var(--bg)]">
           <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-6 py-6 pb-24 sm:pb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-400">
+              <p className="text-sm font-medium text-[var(--muted)]">
                 Built by{" "}
-                <span className="font-display text-base font-bold tracking-tight text-emerald-400 sm:text-lg">
+                <span className="font-display text-base font-bold tracking-tight text-blue-700 sm:text-lg">
                   Walid Abdulkadir
                 </span>
               </p>
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
                 Connect to my socials
               </p>
               <div className="flex flex-wrap gap-2">
@@ -426,7 +446,7 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="GitHub profile (opens in a new tab)"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#1E293B] px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-emerald-500/40 hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="inline-flex items-center gap-1.5 rounded-none border border-[var(--border)] px-3 py-2 text-xs font-medium text-[var(--muted)] transition-colors hover:border-blue-600/40 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                 >
                   <GithubLogo size={16} aria-hidden="true" />
                   GitHub
@@ -436,7 +456,7 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="LinkedIn profile (opens in a new tab)"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#1E293B] px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-emerald-500/40 hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="inline-flex items-center gap-1.5 rounded-none border border-[var(--border)] px-3 py-2 text-xs font-medium text-[var(--muted)] transition-colors hover:border-blue-600/40 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                 >
                   <LinkedinLogo size={16} aria-hidden="true" />
                   LinkedIn
@@ -446,7 +466,7 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram profile (opens in a new tab)"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#1E293B] px-3 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-emerald-500/40 hover:text-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  className="inline-flex items-center gap-1.5 rounded-none border border-[var(--border)] px-3 py-2 text-xs font-medium text-[var(--muted)] transition-colors hover:border-blue-600/40 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                 >
                   <InstagramLogo size={16} aria-hidden="true" />
                   Instagram
@@ -553,15 +573,15 @@ function TabContent({
         {activeTab === "settings" && (
           <div className="space-y-5">
             <div>
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Team Name</label>
+              <label className="text-[11px] font-bold text-[var(--muted)] uppercase tracking-wider">Team Name</label>
               <input
                 value={setup.teamName}
                 onChange={(e) => onTeamNameChange(e.target.value)}
-                className="mt-1.5 w-full px-3 py-2.5 rounded-xl bg-[#0B132B] border border-[#334155] text-sm text-white focus:border-emerald-500 outline-none transition-colors"
+                className="mt-1.5 w-full px-3 py-2.5 rounded-none bg-[var(--bg)] border border-[var(--border)] text-sm text-[var(--fg)] focus:border-blue-600 outline-none transition-colors"
               />
             </div>
             <div>
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Kit Color</label>
+              <label className="text-[11px] font-bold text-[var(--muted)] uppercase tracking-wider">Kit Color</label>
               <div className="flex flex-wrap gap-2.5 mt-2">
                 {["#10B981", "#3B82F6", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"].map((c) => (
                   <button
@@ -575,8 +595,8 @@ function TabContent({
                 ))}
               </div>
             </div>
-            <div className="pt-3 border-t border-[#1E293B]">
-              <p className="text-xs text-gray-500">Changes auto-save to browser storage.</p>
+            <div className="pt-3 border-t border-[var(--border)]">
+              <p className="text-xs text-[var(--muted)]">Changes auto-save to browser storage.</p>
             </div>
           </div>
         )}
