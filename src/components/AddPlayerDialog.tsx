@@ -73,21 +73,21 @@ export default function AddPlayerDialog({ players, kitColor, onAddPlayer, onClos
       <motion.div
         initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 16 }}
         transition={{ type: "spring", stiffness: 300, damping: 28 }}
-        className="w-full max-w-md bg-[#111E38] border border-[#334155] rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-none shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1E293B]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-              <UserPlus size={16} className="text-emerald-400" />
+            <div className="w-8 h-8 rounded-none bg-blue-600/20 border border-blue-600/30 flex items-center justify-center">
+              <UserPlus size={16} className="text-blue-700" />
             </div>
-            <h2 className="text-base font-bold text-white">Add Player</h2>
+            <h2 className="text-base font-bold text-[var(--fg)]">Add Player</h2>
           </div>
           <button onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-[#1E293B] flex items-center justify-center hover:bg-[#334155] transition-colors">
-            <X size={15} className="text-gray-400" />
+            className="w-8 h-8 rounded-none bg-[var(--surface-2)] flex items-center justify-center hover:bg-[var(--surface-2)] transition-colors">
+            <X size={15} className="text-[var(--muted)]" />
           </button>
         </div>
 
@@ -95,52 +95,52 @@ export default function AddPlayerDialog({ players, kitColor, onAddPlayer, onClos
         <div className="p-5 space-y-4">
           {/* Name */}
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Full Name</label>
+            <label className="text-[11px] font-semibold text-[var(--muted)] uppercase tracking-wider">Full Name</label>
             <input
               autoFocus
               value={formName}
               onChange={(e) => { setFormName(e.target.value); setError(""); }}
               placeholder="e.g. Lionel Messi"
-              className="mt-1.5 w-full px-4 py-2.5 rounded-xl bg-[#0B132B] border border-[#334155] text-sm text-white placeholder-gray-600 focus:border-emerald-500 outline-none transition-colors"
+              className="mt-1.5 w-full px-4 py-2.5 rounded-none bg-[var(--bg)] border border-[var(--border)] text-sm text-[var(--fg)] placeholder-[var(--muted)] focus:border-blue-600 outline-none transition-colors"
             />
           </div>
 
           {/* Number + Rating */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Jersey #</label>
+              <label className="text-[11px] font-semibold text-[var(--muted)] uppercase tracking-wider">Jersey #</label>
               <input
                 value={formNumber}
                 onChange={(e) => { setFormNumber(e.target.value.replace(/\D/g, "")); setError(""); }}
                 placeholder="1–99"
                 maxLength={2}
-                className="mt-1.5 w-full px-4 py-2.5 rounded-xl bg-[#0B132B] border border-[#334155] text-sm text-white placeholder-gray-600 focus:border-emerald-500 outline-none transition-colors"
+                className="mt-1.5 w-full px-4 py-2.5 rounded-none bg-[var(--bg)] border border-[var(--border)] text-sm text-[var(--fg)] placeholder-[var(--muted)] focus:border-blue-600 outline-none transition-colors"
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Rating</label>
+              <label className="text-[11px] font-semibold text-[var(--muted)] uppercase tracking-wider">Rating</label>
               <input
                 value={formRating}
                 onChange={(e) => { setFormRating(e.target.value.replace(/\D/g, "")); setError(""); }}
                 placeholder="1–99"
                 maxLength={2}
-                className="mt-1.5 w-full px-4 py-2.5 rounded-xl bg-[#0B132B] border border-[#334155] text-sm text-white placeholder-gray-600 focus:border-emerald-500 outline-none transition-colors"
+                className="mt-1.5 w-full px-4 py-2.5 rounded-none bg-[var(--bg)] border border-[var(--border)] text-sm text-[var(--fg)] placeholder-[var(--muted)] focus:border-blue-600 outline-none transition-colors"
               />
             </div>
           </div>
 
           {/* Position */}
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Position</label>
+            <label className="text-[11px] font-semibold text-[var(--muted)] uppercase tracking-wider">Position</label>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {ALL_POSITIONS.map((pos) => (
                 <button
                   key={pos}
                   onClick={() => setFormPosition(pos)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                  className={`px-2.5 py-1 rounded-none text-xs font-semibold border transition-all ${
                     formPosition === pos
-                      ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
-                      : "bg-[#0B132B] border-[#334155] text-gray-400 hover:text-white hover:border-[#475569]"
+                      ? "bg-blue-600/20 border-blue-600/50 text-blue-700"
+                      : "bg-[var(--bg)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--fg)] hover:border-[var(--border)]"
                   }`}
                 >
                   {pos}
@@ -151,16 +151,16 @@ export default function AddPlayerDialog({ players, kitColor, onAddPlayer, onClos
 
           {/* Preferred foot */}
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Preferred Foot</label>
+            <label className="text-[11px] font-semibold text-[var(--muted)] uppercase tracking-wider">Preferred Foot</label>
             <div className="mt-1.5 flex gap-2">
               {(["right", "left", "both"] as const).map((foot) => (
                 <button
                   key={foot}
                   onClick={() => setFormFoot(foot)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-semibold border capitalize transition-all ${
+                  className={`flex-1 py-2 rounded-none text-xs font-semibold border capitalize transition-all ${
                     formFoot === foot
-                      ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
-                      : "bg-[#0B132B] border-[#334155] text-gray-400 hover:text-white"
+                      ? "bg-blue-600/20 border-blue-600/50 text-blue-700"
+                      : "bg-[var(--bg)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--fg)]"
                   }`}
                 >
                   {foot}
@@ -174,7 +174,7 @@ export default function AddPlayerDialog({ players, kitColor, onAddPlayer, onClos
             {error && (
               <motion.p
                 initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2"
+                className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-none px-3 py-2"
               >
                 {error}
               </motion.p>
@@ -182,24 +182,24 @@ export default function AddPlayerDialog({ players, kitColor, onAddPlayer, onClos
           </AnimatePresence>
 
           {/* Kit preview */}
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#0B132B] border border-[#1E293B]">
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white border-2 border-white/20"
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-none bg-[var(--bg)] border border-[var(--border)]">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-[var(--accent-fg)] border-2 border-white/20"
               style={{ backgroundColor: kitColor }}>
               {formNumber || "#"}
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">{formName || "Player Name"}</p>
-              <p className="text-[10px] text-gray-500">{formPosition} · ★ {formRating}</p>
+              <p className="text-sm font-semibold text-[var(--fg)]">{formName || "Player Name"}</p>
+              <p className="text-[10px] text-[var(--muted)]">{formPosition} · ★ {formRating}</p>
             </div>
           </div>
 
           {/* Submit */}
           <button
             onClick={handleSubmit}
-            className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${
+            className={`w-full flex items-center justify-center gap-2 py-3 rounded-none text-sm font-bold transition-all ${
               success
-                ? "bg-emerald-500 text-white"
-                : "bg-emerald-500 hover:bg-emerald-400 text-white"
+                ? "bg-blue-600 text-[var(--accent-fg)]"
+                : "bg-blue-600 hover:bg-blue-500 text-[var(--accent-fg)]"
             }`}
           >
             <AnimatePresence mode="wait">

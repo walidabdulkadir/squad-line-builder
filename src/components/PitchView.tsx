@@ -24,9 +24,9 @@ function PitchSVG() {
     <svg viewBox="0 0 680 1050" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
       {Array.from({ length: 10 }).map((_, i) => (
         <rect key={i} x={0} y={i * 105} width={680} height={105}
-          fill={i % 2 === 0 ? "#059669" : "#047857"} opacity={0.9} />
+          fill={i % 2 === 0 ? "#438BB2" : "#367A9F"} opacity={0.95} />
       ))}
-      <rect x={20} y={30} width={640} height={990} fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth={2.5} rx={4} />
+      <rect x={20} y={30} width={640} height={990} fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth={2.5} />
       <line x1={20} y1={525} x2={660} y2={525} stroke="rgba(255,255,255,0.6)" strokeWidth={2} />
       <circle cx={340} cy={525} r={80} fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth={2} />
       <circle cx={340} cy={525} r={4} fill="rgba(255,255,255,0.7)" />
@@ -91,7 +91,7 @@ function PlayerNode({
 
   const group = positionGroup(player.position);
   const groupColors: Record<string, string> = {
-    GK: "#F59E0B", DEF: "#3B82F6", MID: "#10B981", FWD: "#EF4444",
+    GK: "#B45309", DEF: "#1D4ED8", MID: "#6D28D9", FWD: "#BE123C",
   };
 
   return (
@@ -143,7 +143,7 @@ function PlayerNode({
       </motion.div>
 
       {/* Name plate */}
-      <div className="mt-0.5 px-1 py-0.5 rounded bg-[#0B132B]/80 backdrop-blur-sm text-center pointer-events-none">
+      <div className="mt-0.5 px-1 py-0.5 rounded bg-[var(--bg)]/80 backdrop-blur-sm text-center pointer-events-none">
         <p className={`text-white font-medium leading-tight whitespace-nowrap ${pitchSize === "compact" ? "text-[8px]" : "text-[9px] md:text-[10px]"}`}>
           {player.name.split(" ").pop()}
         </p>
@@ -165,14 +165,14 @@ function EmptySlot({ x, y, label, pitchSize, onClick }: {
       style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
       onClick={onClick}
     >
-      <div className={`rounded-full border-2 border-dashed border-white/40 flex items-center justify-center group-hover:border-emerald-400 group-hover:bg-emerald-400/10 transition-colors ${
+      <div className={`rounded-full border-2 border-dashed border-white/40 flex items-center justify-center group-hover:border-blue-300 group-hover:bg-blue-400/10 transition-colors ${
         pitchSize === "compact" ? "w-8 h-8" :
         pitchSize === "standard" ? "w-9 h-9 md:w-10 md:h-10" :
         "w-10 h-10 md:w-11 md:h-11"
       }`}>
-        <span className="text-white/50 text-base font-light group-hover:text-emerald-400 transition-colors">+</span>
+        <span className="text-white/50 text-base font-light group-hover:text-blue-300 transition-colors">+</span>
       </div>
-      <span className="mt-0.5 text-[8px] text-white/50 font-medium group-hover:text-emerald-400 transition-colors">{label}</span>
+      <span className="mt-0.5 text-[8px] text-white/50 font-medium group-hover:text-blue-300 transition-colors">{label}</span>
     </button>
   );
 }
@@ -189,7 +189,7 @@ export default function PitchView({
 }: PitchViewProps) {
   return (
     <motion.div
-      className={`relative mx-auto w-full aspect-[68/105] rounded-xl overflow-hidden shadow-2xl border border-emerald-800/30 ${PITCH_MAX_W[pitchSize]}`}
+      className={`iso-pitch relative mx-auto w-full aspect-[68/105] rounded-none overflow-hidden shadow-2xl border border-blue-300/30 ${PITCH_MAX_W[pitchSize]}`}
       animate={{ maxWidth: pitchSize === "compact" ? 340 : pitchSize === "standard" ? 420 : 520 }}
       transition={{ type: "spring", stiffness: 200, damping: 25 }}
     >
