@@ -190,9 +190,6 @@
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
     font-family: var(--font-body);
-    background-image:
-      repeating-linear-gradient(30deg, transparent 0 22px, oklch(72% 0.06 228 / 0.14) 22.5px, transparent 23px 44px),
-      repeating-linear-gradient(150deg, transparent 0 22px, oklch(72% 0.06 228 / 0.14) 22.5px, transparent 23px 44px);
   }
 
   .font-display {
@@ -206,14 +203,15 @@
 
 .app-shell {
   background-image:
-    repeating-linear-gradient(30deg, transparent 0 22px, oklch(72% 0.06 228 / 0.14) 22.5px, transparent 23px 44px),
-    repeating-linear-gradient(150deg, transparent 0 22px, oklch(72% 0.06 228 / 0.14) 22.5px, transparent 23px 44px);
+    linear-gradient(to right, oklch(72% 0.06 228 / 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(72% 0.06 228 / 0.12) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 .app-shell.dark {
   background-image:
-    repeating-linear-gradient(30deg, transparent 0 22px, oklch(52% 0.04 228 / 0.14) 22.5px, transparent 23px 44px),
-    repeating-linear-gradient(150deg, transparent 0 22px, oklch(52% 0.04 228 / 0.14) 22.5px, transparent 23px 44px);
+    linear-gradient(to right, oklch(52% 0.04 228 / 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(52% 0.04 228 / 0.12) 1px, transparent 1px);
 }
 
 .dark .text-blue-700 {
